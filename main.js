@@ -62,10 +62,10 @@ let getMovie = () => {
   }
 };
 
-console.log("movieName", movieName.length);
-if (movieName.length > 0) {
-  getMovie();
-}
+//console.log("movieName", movieName.length);
+//if (movieName.length > 0) {
+//  getMovie();
+//}
 
 movieNameRef.addEventListener("input", getMovie);
 searchBtn.addEventListener("click", getMovie);
