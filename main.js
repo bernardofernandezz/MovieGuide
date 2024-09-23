@@ -5,15 +5,20 @@ const suggestionsContainer = document.getElementById("suggestions");
 const key = "3cda63dc";
 
 let debounceTimer;
+const cache = {};
 
 const searchMovies = async (searchTerm) => {
-  const url = `https://www.omdbapi.com/?s=${searchTerm}&apikey=${key}`; // Alterado para https
-  // ("https://www.omdbapi.com/?i=tt3896198&apikey=3cda63dc");
+  if (cache[searchTerm]) {
+    return cache[searchTerm];
+  }
+
+  const url = `https://www.omdbapi.com/?s=${searchTerm}&apikey=${key}`;
   try {
     const response = await fetch(url);
     const data = await response.json();
     console.log("Dados da busca:", data); // Log para depuração
-    return data.Search || [];
+    cache[searchTerm] = data.Search || [];
+    return cache[searchTerm];
   } catch (error) {
     console.error("Erro ao buscar sugestões:", error);
     return [];
