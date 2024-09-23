@@ -1,13 +1,64 @@
-let movieNameRef = document.getElementById("movie-name");
-let searchBtn = document.getElementById("search-btn");
-let result = document.getElementById("result");
+const movieNameRef = document.getElementById("movie-name");
+const searchBtn = document.getElementById("search-btn");
+const result = document.getElementById("result");
+const suggestionsContainer = document.getElementById("suggestions");
+const key = "3cda63dc";
+
+let debounceTimer;
+
+const searchMovies = async (searchTerm) => {
+  const url = `https://www.omdbapi.com/?s=${searchTerm}&apikey=${key}`; // Alterado para https
+  // ("https://www.omdbapi.com/?i=tt3896198&apikey=3cda63dc");
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log("Dados da busca:", data); // Log para depuração
+    return data.Search || [];
+  } catch (error) {
+    console.error("Erro ao buscar sugestões:", error);
+    return [];
+  }
+};
+
+const showSuggestions = (suggestions) => {
+  suggestionsContainer.innerHTML = "";
+  if (suggestions.length > 0) {
+    for (const movie of suggestions) {
+      const div = document.createElement("div");
+      div.textContent = movie.Title;
+      div.className = "p-2 hover:bg-slate-600 cursor-pointer";
+      div.onclick = () => {
+        movieNameRef.value = movie.Title;
+        suggestionsContainer.classList.add("hidden");
+        getMovie();
+      };
+      suggestionsContainer.appendChild(div);
+    }
+    suggestionsContainer.classList.remove("hidden");
+  } else {
+    suggestionsContainer.classList.add("hidden");
+  }
+};
+
+const debouncedSearch = () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(async () => {
+    const searchTerm = movieNameRef.value;
+    if (searchTerm.length > 2) {
+      const suggestions = await searchMovies(searchTerm);
+      showSuggestions(suggestions);
+    } else {
+      suggestionsContainer.classList.add("hidden");
+    }
+  }, 300);
+};
 
 //function to fetch data from api
 
-let getMovie = () => {
-  let movieName = movieNameRef.value;
+const getMovie = () => {
+  const movieName = movieNameRef.value;
   console.log("movieName", movieName);
-  let url = `http://www.omdbapi.com/?t=${movieName}&apikey=${key}`;
+  const url = `https://www.omdbapi.com/?t=${movieName}&apikey=${key}`; // Alterado para https
   console.log("url", url);
   //if input field is empty
 
@@ -20,8 +71,9 @@ let getMovie = () => {
     fetch(url)
       .then((resp) => resp.json())
       .then((data) => {
+        console.log("Dados do filme:", data); // Log para depuração
         //if movie exist in database
-        if (data.Response == "True") {
+        if (data.Response === "True") {
           result.innerHTML = `
                     <div class="info">
                         <img src=${data.Poster} class="poster">
@@ -67,6 +119,13 @@ let getMovie = () => {
 //  getMovie();
 //}
 
-movieNameRef.addEventListener("input", getMovie);
+movieNameRef.addEventListener("input", debouncedSearch);
 searchBtn.addEventListener("click", getMovie);
 window.addEventListener("load", getMovie);
+
+// Fechar sugestões ao clicar fora
+document.addEventListener("click", (e) => {
+  if (!suggestionsContainer.contains(e.target) && e.target !== movieNameRef) {
+    suggestionsContainer.classList.add("hidden");
+  }
+});

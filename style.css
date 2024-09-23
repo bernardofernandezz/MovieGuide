@@ -7,7 +7,7 @@
 
 body {
   height: 100vh;
-  background: linear-gradient(#1c1917 50%, #0e34a0 50%);
+  background: linear-gradient(to right, yellow, black);
 }
 
 .container {
@@ -58,14 +58,40 @@ body {
 }
 
 .info {
-  position: relative;
-  display: grid;
-  grid-template-columns: 4fr 8fr;
+  display: flex;
+  align-items: center;
+  gap: 1.2em;
   margin-top: 1.2em;
 }
 
 .poster {
-  width: 100%;
+  width: 30%;
+}
+
+.movie-details {
+  width: 70%;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin: 0.6em 0 0.9em 0;
+}
+
+.details {
+  display: flex;
+  font-size: 0.95em;
+  gap: 1em;
+  color: #a0a0a0;
+  margin: 0.6em 0;
+  font-weight: 300;
+}
+
+.genre {
+  display: flex;
+  gap: 0.6em;
+  flex-wrap: wrap;
 }
 
 h2 {
@@ -73,14 +99,6 @@ h2 {
   font-size: 1.5em;
   font-weight: 600;
   letter-spacing: 0.06em;
-}
-
-.rating {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6em;
-  margin: 0.6em 0 0.9em 0;
 }
 
 .rating img {
