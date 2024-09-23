@@ -63,23 +63,29 @@ const debouncedSearch = () => {
 const getMovie = () => {
   const movieName = movieNameRef.value;
   console.log("movieName", movieName);
-  const url = `https://www.omdbapi.com/?t=${movieName}&apikey=${key}`; // Alterado para https
+  const url = `https://www.omdbapi.com/?t=${movieName}&apikey=${key}`;
   console.log("url", url);
-  //if input field is empty
 
+  // Limpa o resultado anterior
+  result.innerHTML = "";
+
+  // Se o campo de pesquisa estiver vazio
   if (movieName.length <= 0) {
-    result.innerHTML = `<h3 class="msg">Please enter a movie name </h3>`;
+    result.innerHTML = `<h3 class="msg">Por favor, digite o nome de um filme</h3>`;
+    return;
   }
 
-  //if input isn't empty
-  else {
-    fetch(url)
-      .then((resp) => resp.json())
-      .then((data) => {
-        console.log("Dados do filme:", data); // Log para depuração
-        //if movie exist in database
-        if (data.Response === "True") {
-          result.innerHTML = `
+  // Mostra uma mensagem de carregamento
+  result.innerHTML = `<h3 class="msg">Pesquisando...</h3>`;
+
+  // Se o campo de pesquisa não estiver vazio
+  fetch(url)
+    .then((resp) => resp.json())
+    .then((data) => {
+      console.log("Dados do filme:", data);
+      // Se o filme existir no banco de dados
+      if (data.Response === "True") {
+        result.innerHTML = `
                     <div class="info">
                         <img src=${data.Poster} class="poster">
                         <div>
@@ -105,18 +111,16 @@ const getMovie = () => {
                     <h3>Cast:</h3>
                     <p>${data.Actors}</p>
                 `;
-        }
-
-        //if movie doesn't exist in database
-        else {
-          result.innerHTML = `<h3 class="msg">${data.Error}</h3>`;
-        }
-      })
-      //if error occurs
-      .catch(() => {
-        result.innerHTML = `<h3 class="msg">Error Occured</h3>`;
-      });
-  }
+      }
+      // Se o filme não existir no banco de dados
+      else {
+        result.innerHTML = `<h3 class="msg">${data.Error}</h3>`;
+      }
+    })
+    // Se ocorrer um erro
+    .catch(() => {
+      result.innerHTML = `<h3 class="msg">Ocorreu um erro</h3>`;
+    });
 };
 
 //console.log("movieName", movieName.length);
