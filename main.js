@@ -16,7 +16,6 @@ const pesquisarFilmes = async (termoPesquisa) => {
   try {
     const resposta = await fetch(url);
     const dados = await resposta.json();
-    console.log("Dados da busca:", dados); // Log para depuração
     cache[termoPesquisa] = dados.Search || [];
     return cache[termoPesquisa];
   } catch (erro) {
@@ -47,38 +46,35 @@ const mostrarSugestoes = (sugestoes) => {
 
 const pesquisaComDebounce = () => {
   clearTimeout(temporizadorDebounce);
-  resultado.innerHTML = ""; // Limpa o resultado anterior
+  resultado.innerHTML = "";
   temporizadorDebounce = setTimeout(async () => {
-    const termoPesquisa = refNomeFilme.value;
+    const termoPesquisa = refNomeFilme.value.trim();
     if (termoPesquisa.length > 2) {
+      resultado.innerHTML = "<p>Buscando...</p>";
       const sugestoes = await pesquisarFilmes(termoPesquisa);
       mostrarSugestoes(sugestoes);
     } else {
       containerSugestoes.classList.add("hidden");
     }
-  }, 300);
+  }, 700);
 };
 
 // Função para buscar dados da API
-const obterFilme = () => {
-  const nomeFilme = refNomeFilme.value;
-  console.log("nomeFilme", nomeFilme);
-  const url = `https://www.omdbapi.com/?t=${nomeFilme}&apikey=${chave}`;
-  console.log("url", url);
-
-  // Se o campo de entrada estiver vazio
+const obterFilme = async () => {
+  const nomeFilme = refNomeFilme.value.trim();
   if (nomeFilme.length <= 0) {
     resultado.innerHTML = `<h3 class="msg">Por favor, digite o nome de um filme</h3>`;
+    return;
   }
-  // Se o campo de entrada não estiver vazio
-  else {
-    fetch(url)
-      .then((resp) => resp.json())
-      .then((dados) => {
-        console.log("Dados do filme:", dados); // Log para depuração
-        // Se o filme existir no banco de dados
-        if (dados.Response === "True") {
-          resultado.innerHTML = `
+
+  resultado.innerHTML = "<p>Carregando...</p>";
+  const url = `https://www.omdbapi.com/?t=${nomeFilme}&apikey=${chave}`;
+
+  try {
+    const resposta = await fetch(url);
+    const dados = await resposta.json();
+    if (dados.Response === "True") {
+      resultado.innerHTML = `
                     <div class="info">
                         <img src=${dados.Poster} class="poster">
                         <div>
@@ -104,16 +100,12 @@ const obterFilme = () => {
                     <h3>Elenco:</h3>
                     <p>${dados.Actors}</p>
                 `;
-        }
-        // Se o filme não existir no banco de dados
-        else {
-          resultado.innerHTML = `<h3 class="msg">${dados.Error}</h3>`;
-        }
-      })
-      // Se ocorrer um erro
-      .catch(() => {
-        resultado.innerHTML = `<h3 class="msg">Ocorreu um erro</h3>`;
-      });
+    } else {
+      resultado.innerHTML = `<h3 class="msg">${dados.Error}</h3>`;
+    }
+  } catch (erro) {
+    console.error("Erro ao buscar filme:", erro);
+    resultado.innerHTML = `<h3 class="msg">Ocorreu um erro ao buscar o filme</h3>`;
   }
 };
 
