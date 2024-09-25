@@ -52,7 +52,9 @@ body {
   border: none;
   cursor: pointer;
 }
-
+.suggestions {
+  color: #fff;
+}
 #result {
   color: #fff;
 }
