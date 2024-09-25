@@ -47,6 +47,7 @@ const mostrarSugestoes = (sugestoes) => {
 
 const pesquisaComDebounce = () => {
   clearTimeout(temporizadorDebounce);
+  resultado.innerHTML = ""; // Limpa o resultado anterior
   temporizadorDebounce = setTimeout(async () => {
     const termoPesquisa = refNomeFilme.value;
     if (termoPesquisa.length > 2) {
