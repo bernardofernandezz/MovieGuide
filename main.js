@@ -7,6 +7,23 @@ const chave = "3cda63dc";
 let temporizadorDebounce;
 const cache = {};
 
+const btnLimpar = document.getElementById("clear-btn");
+const loading = document.getElementById("loading");
+
+const limparPesquisa = () => {
+  refNomeFilme.value = "";
+  resultado.innerHTML = "";
+  containerSugestoes.classList.add("hidden");
+};
+
+const mostrarLoading = () => {
+  loading.classList.remove("hidden");
+};
+
+const esconderLoading = () => {
+  loading.classList.add("hidden");
+};
+
 const pesquisarFilmes = async (termoPesquisa) => {
   if (cache[termoPesquisa]) {
     return cache[termoPesquisa];
@@ -50,8 +67,9 @@ const pesquisaComDebounce = () => {
   temporizadorDebounce = setTimeout(async () => {
     const termoPesquisa = refNomeFilme.value.trim();
     if (termoPesquisa.length > 2) {
-      resultado.innerHTML = "<p>Buscando...</p>";
+      mostrarLoading();
       const sugestoes = await pesquisarFilmes(termoPesquisa);
+      esconderLoading();
       mostrarSugestoes(sugestoes);
     } else {
       containerSugestoes.classList.add("hidden");
@@ -67,12 +85,14 @@ const obterFilme = async () => {
     return;
   }
 
-  resultado.innerHTML = "<p>Carregando...</p>";
+  mostrarLoading();
+  resultado.innerHTML = "";
   const url = `https://www.omdbapi.com/?t=${nomeFilme}&apikey=${chave}`;
 
   try {
     const resposta = await fetch(url);
     const dados = await resposta.json();
+    esconderLoading();
     if (dados.Response === "True") {
       resultado.innerHTML = `
                     <div class="info">
@@ -105,12 +125,14 @@ const obterFilme = async () => {
     }
   } catch (erro) {
     console.error("Erro ao buscar filme:", erro);
+    esconderLoading();
     resultado.innerHTML = `<h3 class="msg">Ocorreu um erro ao buscar o filme</h3>`;
   }
 };
 
 refNomeFilme.addEventListener("input", pesquisaComDebounce);
 btnPesquisar.addEventListener("click", obterFilme);
+btnLimpar.addEventListener("click", limparPesquisa);
 window.addEventListener("load", obterFilme);
 
 // Fechar sugestões ao clicar fora
