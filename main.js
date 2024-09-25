@@ -1,140 +1,129 @@
-const movieNameRef = document.getElementById("movie-name");
-const searchBtn = document.getElementById("search-btn");
-const result = document.getElementById("result");
-const suggestionsContainer = document.getElementById("suggestions");
-const key = "3cda63dc";
+const refNomeFilme = document.getElementById("movie-name");
+const btnPesquisar = document.getElementById("search-btn");
+const resultado = document.getElementById("result");
+const containerSugestoes = document.getElementById("suggestions");
+const chave = "3cda63dc";
 
-let debounceTimer;
+let temporizadorDebounce;
 const cache = {};
 
-const searchMovies = async (searchTerm) => {
-  if (cache[searchTerm]) {
-    return cache[searchTerm];
+const pesquisarFilmes = async (termoPesquisa) => {
+  if (cache[termoPesquisa]) {
+    return cache[termoPesquisa];
   }
 
-  const url = `https://www.omdbapi.com/?s=${searchTerm}&apikey=${key}`;
+  const url = `https://www.omdbapi.com/?s=${termoPesquisa}&apikey=${chave}`;
   try {
-    const response = await fetch(url);
-    const data = await response.json();
-    console.log("Dados da busca:", data); // Log para depuração
-    cache[searchTerm] = data.Search || [];
-    return cache[searchTerm];
-  } catch (error) {
-    console.error("Erro ao buscar sugestões:", error);
+    const resposta = await fetch(url);
+    const dados = await resposta.json();
+    console.log("Dados da busca:", dados); // Log para depuração
+    cache[termoPesquisa] = dados.Search || [];
+    return cache[termoPesquisa];
+  } catch (erro) {
+    console.error("Erro ao buscar sugestões:", erro);
     return [];
   }
 };
 
-const showSuggestions = (suggestions) => {
-  suggestionsContainer.innerHTML = "";
-  if (suggestions.length > 0) {
-    for (const movie of suggestions) {
+const mostrarSugestoes = (sugestoes) => {
+  containerSugestoes.innerHTML = "";
+  if (sugestoes.length > 0) {
+    for (const filme of sugestoes) {
       const div = document.createElement("div");
-      div.textContent = movie.Title;
+      div.textContent = filme.Title;
       div.className = "p-2 hover:bg-slate-600 cursor-pointer";
       div.onclick = () => {
-        movieNameRef.value = movie.Title;
-        suggestionsContainer.classList.add("hidden");
-        getMovie();
+        refNomeFilme.value = filme.Title;
+        containerSugestoes.classList.add("hidden");
+        obterFilme();
       };
-      suggestionsContainer.appendChild(div);
+      containerSugestoes.appendChild(div);
     }
-    suggestionsContainer.classList.remove("hidden");
+    containerSugestoes.classList.remove("hidden");
   } else {
-    suggestionsContainer.classList.add("hidden");
+    containerSugestoes.classList.add("hidden");
   }
 };
 
-const debouncedSearch = () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(async () => {
-    const searchTerm = movieNameRef.value;
-    if (searchTerm.length > 2) {
-      const suggestions = await searchMovies(searchTerm);
-      showSuggestions(suggestions);
+const pesquisaComDebounce = () => {
+  clearTimeout(temporizadorDebounce);
+  resultado.innerHTML = ""; // Limpa o resultado anterior
+  temporizadorDebounce = setTimeout(async () => {
+    const termoPesquisa = refNomeFilme.value;
+    if (termoPesquisa.length > 2) {
+      const sugestoes = await pesquisarFilmes(termoPesquisa);
+      mostrarSugestoes(sugestoes);
     } else {
-      suggestionsContainer.classList.add("hidden");
+      containerSugestoes.classList.add("hidden");
     }
   }, 300);
 };
 
-//function to fetch data from api
-
-const getMovie = () => {
-  const movieName = movieNameRef.value;
-  console.log("movieName", movieName);
-  const url = `https://www.omdbapi.com/?t=${movieName}&apikey=${key}`;
+// Função para buscar dados da API
+const obterFilme = () => {
+  const nomeFilme = refNomeFilme.value;
+  console.log("nomeFilme", nomeFilme);
+  const url = `https://www.omdbapi.com/?t=${nomeFilme}&apikey=${chave}`;
   console.log("url", url);
 
-  // Limpa o resultado anterior
-  result.innerHTML = "";
-
-  // Se o campo de pesquisa estiver vazio
-  if (movieName.length <= 0) {
-    result.innerHTML = `<h3 class="msg">Por favor, digite o nome de um filme</h3>`;
-    return;
+  // Se o campo de entrada estiver vazio
+  if (nomeFilme.length <= 0) {
+    resultado.innerHTML = `<h3 class="msg">Por favor, digite o nome de um filme</h3>`;
   }
-
-  // Mostra uma mensagem de carregamento
-  result.innerHTML = `<h3 class="msg">Pesquisando...</h3>`;
-
-  // Se o campo de pesquisa não estiver vazio
-  fetch(url)
-    .then((resp) => resp.json())
-    .then((data) => {
-      console.log("Dados do filme:", data);
-      // Se o filme existir no banco de dados
-      if (data.Response === "True") {
-        result.innerHTML = `
+  // Se o campo de entrada não estiver vazio
+  else {
+    fetch(url)
+      .then((resp) => resp.json())
+      .then((dados) => {
+        console.log("Dados do filme:", dados); // Log para depuração
+        // Se o filme existir no banco de dados
+        if (dados.Response === "True") {
+          resultado.innerHTML = `
                     <div class="info">
-                        <img src=${data.Poster} class="poster">
+                        <img src=${dados.Poster} class="poster">
                         <div>
-                            <h2>${data.Title}</h2>
+                            <h2>${dados.Title}</h2>
                             <div class="rating">
                                 <img src="star-icon.svg">
-                                <h4>${data.imdbRating}</h4>
+                                <h4>${dados.imdbRating}</h4>
                             </div>
                             <div class="details">
-                                <span>${data.Rated}</span>
-                                <span>${data.Year}</span>
-                                <span>${data.Runtime}</span>
+                                <span>${dados.Rated}</span>
+                                <span>${dados.Year}</span>
+                                <span>${dados.Runtime}</span>
                             </div>
                             <div class="genre">
-                                <div>${data.Genre.split(",").join(
+                                <div>${dados.Genre.split(",").join(
                                   "</div><div>"
                                 )}</div>
                             </div>
                         </div>
                     </div>
-                    <h3>Plot:</h3>
-                    <p>${data.Plot}</p>
-                    <h3>Cast:</h3>
-                    <p>${data.Actors}</p>
+                    <h3>Enredo:</h3>
+                    <p>${dados.Plot}</p>
+                    <h3>Elenco:</h3>
+                    <p>${dados.Actors}</p>
                 `;
-      }
-      // Se o filme não existir no banco de dados
-      else {
-        result.innerHTML = `<h3 class="msg">${data.Error}</h3>`;
-      }
-    })
-    // Se ocorrer um erro
-    .catch(() => {
-      result.innerHTML = `<h3 class="msg">Ocorreu um erro</h3>`;
-    });
+        }
+        // Se o filme não existir no banco de dados
+        else {
+          resultado.innerHTML = `<h3 class="msg">${dados.Error}</h3>`;
+        }
+      })
+      // Se ocorrer um erro
+      .catch(() => {
+        resultado.innerHTML = `<h3 class="msg">Ocorreu um erro</h3>`;
+      });
+  }
 };
 
-//console.log("movieName", movieName.length);
-//if (movieName.length > 0) {
-//  getMovie();
-//}
-
-movieNameRef.addEventListener("input", debouncedSearch);
-searchBtn.addEventListener("click", getMovie);
-window.addEventListener("load", getMovie);
+refNomeFilme.addEventListener("input", pesquisaComDebounce);
+btnPesquisar.addEventListener("click", obterFilme);
+window.addEventListener("load", obterFilme);
 
 // Fechar sugestões ao clicar fora
 document.addEventListener("click", (e) => {
-  if (!suggestionsContainer.contains(e.target) && e.target !== movieNameRef) {
-    suggestionsContainer.classList.add("hidden");
+  if (!containerSugestoes.contains(e.target) && e.target !== refNomeFilme) {
+    containerSugestoes.classList.add("hidden");
   }
 });
