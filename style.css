@@ -2,7 +2,7 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 body {
@@ -151,6 +151,7 @@ p {
 
 .msg {
   text-align: center;
+  padding-right: 50px;
 }
 
 @media screen and (max-width: 600px) {
